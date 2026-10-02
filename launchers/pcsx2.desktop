@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PCSX2
+Comment=Emulador de PlayStation 2
+Exec=pcsx2
+Icon=applications-games
+Terminal=false
+Categories=Game;Emulator;
+StartupNotify=true

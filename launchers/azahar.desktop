@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Azahar
+Comment=Emulador de Nintendo 3DS
+Exec=azahar
+Icon=applications-games
+Terminal=false
+Categories=Game;Emulator;
+StartupNotify=true

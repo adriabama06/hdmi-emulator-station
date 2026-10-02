@@ -1,0 +1,49 @@
+services:
+  hdmi-emulator:
+    build: .
+    image: hdmi-emulator:latest
+    container_name: hdmi-emulator
+    restart: unless-stopped
+
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/fb0:/dev/fb0
+
+    device_cgroup_rules:
+      - 'c 226:* rmw'   # DRM
+      - 'c 29:* rmw'    # framebuffer
+      - 'c 13:* rmw'    # input devices (evdev/controllers)
+
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+
+    group_add:
+      - audio
+      - video
+      - "995"  # input  -> getent group input
+      - "993"  # render -> getent group render
+
+    volumes:
+      - ./data:/home/ubuntu
+
+    environment:
+      - DISPLAY=:0
+      - TZ=Europe/Madrid
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      # Virtual monitor (Xvfb) to test via VNC without HDMI:
+      - FORCE_VIRTUAL_MONITOR=true
+
+    ports:
+      - "5910:5900" # VNC
+
+    # --- NVIDIA GPU (uncomment if you have NVIDIA) ---
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]

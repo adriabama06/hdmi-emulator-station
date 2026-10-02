@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=RetroArch
+Comment=Emulador multi-sistema (PSX, SNES, NES, GB/GBA...)
+Exec=retroarch
+Icon=applications-games
+Terminal=false
+Categories=Game;Emulator;
+StartupNotify=true
