@@ -4,6 +4,7 @@ services:
     image: hdmi-emulator:latest
     container_name: hdmi-emulator
     restart: unless-stopped
+    shm_size: '2gb'
 
     devices:
       - /dev/dri:/dev/dri
