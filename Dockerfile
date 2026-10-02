@@ -13,7 +13,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && apt-get install -y --no-install-recommends \
         sudo ca-certificates curl wget jq \
         locales tzdata \
-        mesa-utils libgl1 libglx-mesa0 libegl1 libgles2 \
+        mesa-utils libgl1 libglx-mesa0 libegl1 libgles2 libopengl0 \
         libvulkan1 mesa-vulkan-drivers \
         xserver-xorg-video-all xserver-xorg-input-all \
         x11-xserver-utils xinit x11-utils x11-xkb-utils \
