@@ -4,10 +4,12 @@ services:
     image: hdmi-emulator:latest
     container_name: hdmi-emulator
     restart: unless-stopped
-    shm_size: '2gb'
+    ipc: host
 
     devices:
-      - /dev/dri:/dev/dri
+      - /dev/dri
+      - /dev/uinput
+      - /dev/uhid
       - /dev/fb0:/dev/fb0
 
     device_cgroup_rules:
@@ -25,8 +27,11 @@ services:
       - video
       - "995"  # input  -> getent group input
       - "993"  # render -> getent group render
+      - '44'
 
     volumes:
+      - /dev/:/dev/:rw
+      - /run/udev:/run/udev:rw
       - ./data:/home/ubuntu
 
     environment:
