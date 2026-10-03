@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         sudo ca-certificates curl wget jq \
         locales tzdata \
         mesa-utils libgl1 libglx-mesa0 libegl1 libgles2 libopengl0 \
+        libegl-mesa0 libgl1-mesa-dri libgbm1 \
+        mesa-vulkan-drivers libvulkan1 vulkan-tools \
+        xserver-xorg-video-dummy libepoxy0 \
         libvulkan1 mesa-vulkan-drivers \
         xserver-xorg-video-all xserver-xorg-input-all \
         x11-xserver-utils xinit x11-utils x11-xkb-utils \
@@ -34,9 +37,6 @@ RUN (userdel games 2>/dev/null || true) && \
     usermod -aG sudo ubuntu && \
     echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu && \
     chmod 0440 /etc/sudoers.d/ubuntu
-
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # 1.3 Desktop launchers (copied to ~/Desktop at startup)
 COPY launchers/ /usr/share/applications/
@@ -89,6 +89,9 @@ RUN apt-get update \
 RUN usermod -aG video,audio ubuntu && \
     (getent group input >/dev/null && usermod -aG input ubuntu || true) && \
     (getent group render >/dev/null && usermod -aG render ubuntu || true)
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # ============================================================
 # 7. Final build

@@ -10,18 +10,37 @@ mkdir -p "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 
 if [ "${FORCE_VIRTUAL_MONITOR}" = "true" ]; then
-    # --- Virtual monitor (Xvfb): ignores GPU/HDMI, useful for testing via VNC ---
+    # --- Virtual monitor: Xdummy + glamor (DRI3-capable, unlike Xvfb) ---
     export GALLIUM_DRIVER=llvmpipe
     export LIBGL_ALWAYS_SOFTWARE=1
-    export VK_ICD_FILENAMES=/dev/null
-    export VK_DRIVER_FILES=/dev/null
-    Xvfb :0 -ac -screen 0 1920x1080x24 &
+
+    sudo mkdir -p /etc/X11
+    sudo tee /etc/X11/xorg-dummy.conf >/dev/null <<'EOF'
+Section "Device"
+    Identifier "dummy"
+    Driver "dummy"
+    Option "AccelMethod" "glamor"
+EndSection
+
+Section "Screen"
+    Identifier "screen"
+    Device "dummy"
+    DefaultDepth 24
+    SubSection "Display"
+        Depth 24
+        Modes "1920x1080"
+    EndSubSection
+EndSection
+EOF
+
+    sudo Xorg :0 -config /etc/X11/xorg-dummy.conf -logfile /tmp/Xorg.log &
     for _ in $(seq 1 20); do
         xdpyinfo -display :0 >/dev/null 2>&1 && break
         sleep 0.5
     done
     if ! xdpyinfo -display :0 >/dev/null 2>&1; then
-        echo "=== Xvfb failed to start ===" >&2
+        echo "=== Xdummy failed to start. Log: ===" >&2
+        tail -30 /tmp/Xorg.log >&2 || true
         exit 1
     fi
 else
