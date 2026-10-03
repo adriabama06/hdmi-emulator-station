@@ -16,8 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         mesa-utils libgl1 libglx-mesa0 libegl1 libgles2 libopengl0 \
         libegl-mesa0 libgl1-mesa-dri libgbm1 \
         mesa-vulkan-drivers libvulkan1 vulkan-tools \
-        xserver-xorg-video-dummy libepoxy0 \
-        libvulkan1 mesa-vulkan-drivers \
         xserver-xorg-video-all xserver-xorg-input-all \
         x11-xserver-utils xinit x11-utils x11-xkb-utils \
         xfce4 xfce4-terminal dbus-x11 \

@@ -45,6 +45,13 @@ environment:
 This starts an **Xvfb** (1920x1080) instead of Xorg on the GPU: the full desktop
 is still visible via VNC, regardless of whether HDMI is connected or not.
 
+> **Virtual mode = software rendering.** Stock X servers (Xvfb) have no DRI3, so
+> **Vulkan cannot present** there. Use OpenGL/Software backends while testing:
+> - **Dolphin**: Graphics settings → Backend → **OpenGL** (the container defaults
+>   fresh configs to `GFXBackend = OGL`). Vulkan needs the real HDMI mode below.
+> - **PCSX2**: Settings → Graphics → Renderer → **OpenGL**.
+> - **RetroArch**: works as-is (GL cores run on llvmpipe).
+
 ### Where to put games and BIOS
 
 Everything you place in `./data` appears inside at `/home/ubuntu`:

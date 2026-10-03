@@ -10,38 +10,29 @@ mkdir -p "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 
 if [ "${FORCE_VIRTUAL_MONITOR}" = "true" ]; then
-    # --- Virtual monitor: Xdummy + glamor (DRI3-capable, unlike Xvfb) ---
+    # --- Virtual monitor (Xvfb): no GPU output, software rendering via llvmpipe ---
+    # NOTE: stock X servers (Xvfb, dummy) have no DRI3, so Vulkan CANNOT present
+    # here. Emulators must use OpenGL (llvmpipe) or Software backends in this mode.
     export GALLIUM_DRIVER=llvmpipe
     export LIBGL_ALWAYS_SOFTWARE=1
 
-    sudo mkdir -p /etc/X11
-    sudo tee /etc/X11/xorg-dummy.conf >/dev/null <<'EOF'
-Section "Device"
-    Identifier "dummy"
-    Driver "dummy"
-    Option "AccelMethod" "glamor"
-EndSection
-
-Section "Screen"
-    Identifier "screen"
-    Device "dummy"
-    DefaultDepth 24
-    SubSection "Display"
-        Depth 24
-        Modes "1920x1080"
-    EndSubSection
-EndSection
-EOF
-
-    sudo Xorg :0 -config /etc/X11/xorg-dummy.conf -logfile /tmp/Xorg.log &
+    Xvfb :0 -ac -screen 0 1920x1080x24 &
     for _ in $(seq 1 20); do
         xdpyinfo -display :0 >/dev/null 2>&1 && break
         sleep 0.5
     done
     if ! xdpyinfo -display :0 >/dev/null 2>&1; then
-        echo "=== Xdummy failed to start. Log: ===" >&2
-        tail -30 /tmp/Xorg.log >&2 || true
+        echo "=== Xvfb failed to start ===" >&2
         exit 1
+    fi
+
+    # Default Dolphin to the OpenGL backend (Vulkan needs DRI3 = real HDMI).
+    # Only applied when no backend was explicitly configured before.
+    DOLPHIN_INI="$HOME/.config/dolphin-emu/Dolphin.ini"
+    if ! grep -qE '^[[:space:]]*GFXBackend[[:space:]]*=' "$DOLPHIN_INI" 2>/dev/null; then
+        mkdir -p "$(dirname "$DOLPHIN_INI")"
+        printf '\n[Core]\nGFXBackend = OGL\n' >> "$DOLPHIN_INI"
+        echo "Virtual monitor: defaulted Dolphin backend to OpenGL ($DOLPHIN_INI)"
     fi
 else
     # --- Real HDMI: Xorg on /dev/dri ---
