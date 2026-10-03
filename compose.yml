@@ -40,7 +40,7 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
       # Virtual monitor (Xvfb) to test via VNC without HDMI:
-      - FORCE_VIRTUAL_MONITOR=true
+      # - FORCE_VIRTUAL_MONITOR=true
 
     ports:
       - "5910:5900" # VNC
