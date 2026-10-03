@@ -43,6 +43,9 @@ services:
       - NVIDIA_DRIVER_CAPABILITIES=all
       # Virtual monitor (Xvfb) to test via VNC without HDMI:
       # - FORCE_VIRTUAL_MONITOR=true
+      # HDMI audio (auto-detected with `aplay -l`, override only if needed):
+      # - HDMI_CARD=0
+      # - HDMI_DEVICE=7
 
     ports:
       - "5910:5900" # VNC

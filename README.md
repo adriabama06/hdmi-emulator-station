@@ -109,6 +109,15 @@ volumes:
 ## Notes
 
 - `APPIMAGE_EXTRACT_AND_RUN=1` is set because AppImages can't use FUSE inside Docker.
+- **Audio**: the container starts a PulseAudio mixer on the HDMI output at boot
+  (auto-detected with `aplay -l`, override with `HDMI_CARD` / `HDMI_DEVICE`).
+  ALSA clients route through it, so Dolphin's **Cubeb** backend (the default)
+  works alongside PCSX2/RetroArch. If Pulse fails to start, it falls back to
+  direct ALSA with `dmix`. Boot logs show `aplay -l`, `pactl` sinks and a
+  `speaker-test` (you should hear it on the TV).
+- If Dolphin is still silent: check `Options → Audio Settings` (backend **Cubeb**,
+  volume up, DSP HLE), run `pactl list short sinks` and `pavucontrol` inside the
+  container, and make sure no other app holds `hw:0,7` exclusively.
 - RetroArch cores for **N64 and hardware-accelerated PSX** are not packaged in
   Ubuntu 24.04; they can be downloaded from RetroArch → *Online Updater* → *Core Downloader*.
 - `privileged: true` is what allows Xorg to take the GPU and adjust `/dev/*` permissions.

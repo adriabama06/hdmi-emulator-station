@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         x11vnc xvfb \
         xdg-utils desktop-file-utils \
         hicolor-icon-theme adwaita-icon-theme \
-        alsa-utils pulseaudio-utils \
+        alsa-utils pulseaudio pulseaudio-utils libasound2-plugins pavucontrol \
         joystick jstest-gtk evtest \
         unzip p7zip-full \
     && locale-gen en_US.UTF-8 \
