@@ -83,6 +83,18 @@ EOF
     fi
 fi
 
+# --- Audio HDMI (ALSA): desmutear salidas digitales y fijar TV por defecto ---
+# Tu TV es card 0 device 7 ("HDMI 1 [HAIER TV]"). En HDMI no hay control
+# "Master", solo IEC958 (uno por salida 3/7/8/9 = 0/1/2/3). Vienen en [off].
+for _c in 0 1 2 3; do
+    amixer -c0 sset "IEC958",${_c} unmute 2>/dev/null || true
+done
+sudo tee /etc/asound.conf >/dev/null <<'EOF'
+defaults.pcm.card 0
+defaults.pcm.device 7
+defaults.ctl.card 0
+EOF
+
 # Desktop launchers
 mkdir -p "$HOME/Desktop"
 for f in pcsx2 dolphin-emu azahar retroarch; do

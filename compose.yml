@@ -10,12 +10,14 @@ services:
       - /dev/dri
       - /dev/uinput
       - /dev/uhid
-      - /dev/fb0:/dev/fb0
+      - /dev/fb0:/dev/fb0 # hdmi frame buffer
+      - /dev/input
 
     device_cgroup_rules:
       - 'c 226:* rmw'   # DRM
       - 'c 29:* rmw'    # framebuffer
       - 'c 13:* rmw'    # input devices (evdev/controllers)
+      - 'c 116:* rmw'   # ALSA /dev/snd (HDMI audio)
 
     privileged: true
     security_opt:
@@ -25,7 +27,7 @@ services:
     group_add:
       - audio
       - video
-      - "995"  # input  -> getent group input
+      - "996"  # input  -> getent group input
       - "993"  # render -> getent group render
       - '44'
 
