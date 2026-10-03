@@ -45,10 +45,13 @@ environment:
 This starts an **Xvfb** (1920x1080) instead of Xorg on the GPU: the full desktop
 is still visible via VNC, regardless of whether HDMI is connected or not.
 
-> **Virtual mode = software rendering.** Stock X servers (Xvfb) have no DRI3, so
-> **Vulkan cannot present** there. Use OpenGL/Software backends while testing:
-> - **Dolphin**: Graphics settings → Backend → **OpenGL** (the container defaults
->   fresh configs to `GFXBackend = OGL`). Vulkan needs the real HDMI mode below.
+> **Virtual mode and the GPU.** If the container sees a GPU render node
+> (`/dev/dri/renderD128`, mounted from the host), it runs a DRI3-capable Xvfb
+> on it: full hardware acceleration (including Vulkan) over VNC, no TV needed,
+> coexisting with the host desktop. Without a render node it falls back to
+> software rendering (llvmpipe): then use OpenGL/Software backends —
+> - **Dolphin**: Graphics settings → Backend → **OpenGL** (auto-defaulted for
+>   fresh configs). Vulkan needs a DRI3 X server (GPU-backed virtual or real HDMI).
 > - **PCSX2**: Settings → Graphics → Renderer → **OpenGL**.
 > - **RetroArch**: works as-is (GL cores run on llvmpipe).
 

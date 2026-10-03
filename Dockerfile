@@ -40,6 +40,12 @@ RUN (userdel games 2>/dev/null || true) && \
 COPY launchers/ /usr/share/applications/
 RUN update-desktop-database /usr/share/applications
 
+# 1.4 Patched Xvfb with DRI3/GLAMOR (LinuxServer, Ubuntu 24.04 build).
+# Single-binary copy: the rest of their rootfs is NOT needed (same distro,
+# same SONAMEs). If this image/tag ever disappears, delete this COPY line and
+# the entrypoint automatically falls back to stock Xvfb (software rendering).
+COPY --from=lscr.io/linuxserver/xvfb:ubuntunoble /usr/bin/Xvfb /usr/local/bin/Xvfb-patched
+
 # ============================================================
 # 2. PS2 Emulator - PCSX2 (AppImage)
 # ============================================================

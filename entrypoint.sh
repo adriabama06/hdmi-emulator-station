@@ -10,13 +10,42 @@ mkdir -p "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 
 if [ "${FORCE_VIRTUAL_MONITOR}" = "true" ]; then
-    # --- Virtual monitor (Xvfb): no GPU output, software rendering via llvmpipe ---
-    # NOTE: stock X servers (Xvfb, dummy) have no DRI3, so Vulkan CANNOT present
-    # here. Emulators must use OpenGL (llvmpipe) or Software backends in this mode.
+    # --- Virtual monitor (Xvfb) ---
+    # Prefer the DRI3-capable patched Xvfb on the GPU render node (render nodes
+    # need no DRM master, so this coexists with the host desktop). Fall back to
+    # stock Xvfb + llvmpipe software rendering (no Vulkan presentation there:
+    # stock X servers have no DRI3, and Dolphin's OpenGL backend is EGL-only).
     export GALLIUM_DRIVER=llvmpipe
     export LIBGL_ALWAYS_SOFTWARE=1
+    DRINODE="${DRINODE:-/dev/dri/renderD128}"
 
-    Xvfb :0 -ac -screen 0 1920x1080x24 &
+    XVFB_BIN="Xvfb"
+    if [ -x /usr/local/bin/Xvfb-patched ] && [ -e "$DRINODE" ] \
+        && /usr/local/bin/Xvfb-patched -help 2>&1 | grep -q 'vfbdevice'; then
+        XVFB_BIN="/usr/local/bin/Xvfb-patched"
+        # Real GPU behind the virtual screen: unset software fallbacks so
+        # hardware backends (including Vulkan) are used.
+        unset GALLIUM_DRIVER LIBGL_ALWAYS_SOFTWARE
+        XVFB_DRI="-vfbdevice $DRINODE"
+        echo "Virtual monitor: patched Xvfb with DRI3 on $DRINODE"
+    else
+        XVFB_DRI=""
+        echo "Virtual monitor: stock Xvfb (software rendering, Vulkan cannot present)"
+        # Default Dolphin to the OpenGL backend (Vulkan needs DRI3 = GPU X server).
+        # Only applied when no backend was explicitly configured before.
+        DOLPHIN_INI="$HOME/.config/dolphin-emu/Dolphin.ini"
+        if ! grep -qE '^[[:space:]]*GFXBackend[[:space:]]*=' "$DOLPHIN_INI" 2>/dev/null; then
+            mkdir -p "$(dirname "$DOLPHIN_INI")"
+            printf '\n[Core]\nGFXBackend = OGL\n' >> "$DOLPHIN_INI"
+            echo "Virtual monitor: defaulted Dolphin backend to OpenGL ($DOLPHIN_INI)"
+        fi
+    fi
+
+    # shellcheck disable=SC2086
+    $XVFB_BIN :0 -ac -screen 0 1920x1080x24 \
+        +extension COMPOSITE +extension DAMAGE +extension GLX +extension RANDR \
+        +extension RENDER +extension MIT-SHM +extension XFIXES +extension XTEST \
+        -iglx +render -nolisten tcp -noreset -shmem $XVFB_DRI &
     for _ in $(seq 1 20); do
         xdpyinfo -display :0 >/dev/null 2>&1 && break
         sleep 0.5
@@ -25,15 +54,7 @@ if [ "${FORCE_VIRTUAL_MONITOR}" = "true" ]; then
         echo "=== Xvfb failed to start ===" >&2
         exit 1
     fi
-
-    # Default Dolphin to the OpenGL backend (Vulkan needs DRI3 = real HDMI).
-    # Only applied when no backend was explicitly configured before.
-    DOLPHIN_INI="$HOME/.config/dolphin-emu/Dolphin.ini"
-    if ! grep -qE '^[[:space:]]*GFXBackend[[:space:]]*=' "$DOLPHIN_INI" 2>/dev/null; then
-        mkdir -p "$(dirname "$DOLPHIN_INI")"
-        printf '\n[Core]\nGFXBackend = OGL\n' >> "$DOLPHIN_INI"
-        echo "Virtual monitor: defaulted Dolphin backend to OpenGL ($DOLPHIN_INI)"
-    fi
+    xdpyinfo -display :0 2>/dev/null | grep -iE 'DRI3|Present' || true
 else
     # --- Real HDMI: Xorg on /dev/dri ---
     if [ -e /dev/dri ]; then
