@@ -13,6 +13,8 @@ if [ "${FORCE_VIRTUAL_MONITOR}" = "true" ]; then
     # --- Virtual monitor (Xvfb): ignores GPU/HDMI, useful for testing via VNC ---
     export GALLIUM_DRIVER=llvmpipe
     export LIBGL_ALWAYS_SOFTWARE=1
+    export VK_ICD_FILENAMES=/dev/null
+    export VK_DRIVER_FILES=/dev/null
     Xvfb :0 -ac -screen 0 1920x1080x24 &
     for _ in $(seq 1 20); do
         xdpyinfo -display :0 >/dev/null 2>&1 && break
