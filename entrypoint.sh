@@ -11,6 +11,8 @@ chmod 700 "$XDG_RUNTIME_DIR"
 
 if [ "${FORCE_VIRTUAL_MONITOR}" = "true" ]; then
     # --- Virtual monitor (Xvfb): ignores GPU/HDMI, useful for testing via VNC ---
+    export GALLIUM_DRIVER=llvmpipe
+    export LIBGL_ALWAYS_SOFTWARE=1
     Xvfb :0 -ac -screen 0 1920x1080x24 &
     for _ in $(seq 1 20); do
         xdpyinfo -display :0 >/dev/null 2>&1 && break
@@ -31,6 +33,8 @@ else
 Section "Device"
     Identifier "GPU"
     Driver "modesetting"
+    Option "DRI3" "true"
+    Option "AccelMethod" "glamor"
 EndSection
 EOF
 
